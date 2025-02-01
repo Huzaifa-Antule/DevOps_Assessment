@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  loki:
+    image: grafana/loki:2.8.0
+    ports:
+      - "3100:3100"
+    command: --config.file=/mnt/config/loki-config.yaml
+    volumes:
+      - ./loki-config.yaml:/mnt/config/loki-config.yaml
+    networks:
+      - loki
+
+  promtail:
+    image: grafana/promtail:2.8.0
+    command: --config.file=/mnt/config/promtail-config.yaml
+    volumes:
+      - ./promtail-config.yaml:/mnt/config/promtail-config.yaml
+      - /var/log/sample.log:/var/log/sample.log
+    networks:
+      - loki
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - loki
+    depends_on:
+      - loki
+
+networks:
+  loki:
+
+volumes:
+  grafana-data:
